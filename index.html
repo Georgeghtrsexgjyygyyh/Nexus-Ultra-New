@@ -13,9 +13,117 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
     <style>
-        /* [ВАШ CSS БЕЗ ИЗМЕНЕНИЙ, только добавлены 2 новых класса] */
+        /* Добавлены 2 новых класса для анимаций */
         .msg { animation: fadeIn 0.4s ease !important; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Style for image generation */
+        .image-container {
+            position: relative;
+            margin: 12px 0;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--panel-2);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+        }
+        
+        .image-skeleton {
+            background: linear-gradient(90deg, rgba(99,102,241,0.1) 25%, rgba(99,102,241,0.3) 50%, rgba(99,102,241,0.1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .generated-image {
+            width: 100%;
+            height: auto;
+            border-radius: 14px;
+            filter: blur(0);
+            transition: filter 1s ease;
+            opacity: 0;
+            animation: fadeInImage 1s forwards;
+        }
+        
+        @keyframes fadeInImage {
+            to { opacity: 1; }
+        }
+        
+        .image-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .image-container:hover .image-actions {
+            opacity: 1;
+        }
+        
+        .image-action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            transition: all 0.2s;
+        }
+        
+        .image-action-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+        
+        .image-meta {
+            padding: 8px 12px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Command autocomplete */
+        .command-hint {
+            position: absolute;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+        
+        .command-hint.active {
+            opacity: 1;
+        }
         
         :root {
             --accent: #6366f1; --accent-glow: rgba(99, 102, 241, 0.4); --success: #10b981; --success-glow: rgba(16, 185, 129, 0.3);
@@ -347,6 +455,22 @@
     };
 
     // ==========================================
+    // NEW: IMAGE GENERATION STYLES
+    // ==========================================
+    const IMAGE_STYLES = {
+        'anime': 'Anime style, manga illustration, detailed anime artwork',
+        'realistic': 'Photorealistic, hyperrealism, 8k ultra realistic',
+        'oil': 'Oil painting style, art gallery quality, impasto technique',
+        'watercolor': 'Watercolor painting, soft washes, artistic',
+        'sketch': 'Pencil sketch, line art, monochromatic',
+        'cyberpunk': 'Cyberpunk aesthetic, neon lights, dystopian',
+        'fantasy': 'Fantasy art, magical atmosphere, epic fantasy',
+        'abstract': 'Abstract art, conceptual, modern art',
+        'portrait': 'Professional portrait, studio lighting',
+        'landscape': 'Epic landscape, cinematic lighting'
+    };
+
+    // ==========================================
     // NEW: ENHANCED MODELS (25+ MODELS)
     // ==========================================
     const MODEL_PRIORITIES = {
@@ -412,6 +536,7 @@
     let sessionTokenCount = 0;
     let limitsCache = { data: null, timestamp: 0 };
     let history = [];
+    let currentImageStyle = 'realistic'; // Default style for image generation
 
     // ==========================================
     // NEW: CHAT MANAGEMENT FUNCTIONS
@@ -522,7 +647,13 @@
             return;
         }
         
-        history.forEach(msg => addMsg(msg.role, msg.content, false));
+        history.forEach(msg => {
+            if (msg.type === 'image') {
+                addImageToChat(msg.content, false);
+            } else {
+                addMsg(msg.role, msg.content, false);
+            }
+        });
         scrollToBottom();
     }
 
@@ -536,11 +667,17 @@
     function saveChats() {
         localStorage.setItem('nexus_chats', JSON.stringify(chats));
         localStorage.setItem('nexus_current_chat', currentChatId);
+        localStorage.setItem('nexus_image_style', currentImageStyle);
     }
 
     function loadChats() {
         const saved = localStorage.getItem('nexus_chats');
         const savedCurrent = localStorage.getItem('nexus_current_chat');
+        const savedStyle = localStorage.getItem('nexus_image_style');
+        
+        if (savedStyle) {
+            currentImageStyle = savedStyle;
+        }
         
         if (saved) {
             chats = JSON.parse(saved);
@@ -554,6 +691,176 @@
         } else {
             createChat('Стартовый чат');
         }
+    }
+
+    // ==========================================
+    // NEW: IMAGE GENERATION FUNCTIONS
+    // ==========================================
+    function generatePollinationsUrl(prompt, style = currentImageStyle, seed = null) {
+        // Clean and format prompt
+        const cleanPrompt = prompt.replace(/[^a-zA-Z0-9а-яА-Я\s]/g, '').substring(0, 200);
+        const encodedPrompt = encodeURIComponent(cleanPrompt.replace(/\s+/g, '_'));
+        const stylePrompt = IMAGE_STYLES[style] || '';
+        const fullPrompt = stylePrompt ? `${encodedPrompt}_${stylePrompt}` : encodedPrompt;
+        
+        // Add seed for uniqueness
+        const finalSeed = seed || Date.now();
+        
+        return `https://image.pollinations.ai/prompt/${fullPrompt}?nologo=true&seed=${finalSeed}&width=1024&height=768`;
+    }
+
+    async function generateImage(prompt) {
+        const container = document.createElement('div');
+        container.className = 'msg ai';
+        
+        // Show skeleton loader
+        const skeletonDiv = document.createElement('div');
+        skeletonDiv.className = 'image-container';
+        skeletonDiv.innerHTML = `
+            <div class="image-skeleton">
+                <div class="thinking-content">
+                    <div class="pulse"></div>
+                    <span>Создание изображения Nexus Vision Alpha...</span>
+                </div>
+            </div>
+        `;
+        
+        container.appendChild(skeletonDiv);
+        document.getElementById('chat-window').appendChild(container);
+        scrollToBottom();
+        
+        // Generate URL and create image element
+        const imageUrl = generatePollinationsUrl(prompt);
+        const img = new Image();
+        
+        img.onload = () => {
+            // Replace skeleton with actual image
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'image-container';
+            imgContainer.innerHTML = `
+                <div class="image-actions">
+                    <button class="image-action-btn" onclick="downloadImage('${imageUrl}', '${prompt}')" title="Скачать">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="image-action-btn" onclick="openImageModal('${imageUrl}')" title="Увеличить">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                    <button class="image-action-btn" onclick="shareImage('${imageUrl}', '${prompt}')" title="Поделиться">
+                        <i class="fas fa-share"></i>
+                    </button>
+                </div>
+                <img src="${imageUrl}" alt="Generated image: ${prompt}" class="generated-image">
+                <div class="image-meta">Generated by Nexus Vision Alpha | Style: ${currentImageStyle}</div>
+            `;
+            
+            skeletonDiv.replaceWith(imgContainer);
+            scrollToBottom();
+            
+            // Add to history
+            history.push({ 
+                type: 'image', 
+                content: { url: imageUrl, prompt: prompt, style: currentImageStyle } 
+            });
+            if (history.length > CONFIG.MAX_HISTORY_LEN) history = history.slice(-CONFIG.MAX_HISTORY_LEN);
+            chats[currentChatId].history = [...history];
+            chats[currentChatId].lastUpdated = new Date().toISOString();
+            saveChats();
+        };
+        
+        img.onerror = () => {
+            skeletonDiv.innerHTML = `
+                <div class="image-skeleton" style="background: var(--error-glow);">
+                    <i class="fas fa-exclamation-triangle"></i> Ошибка генерации изображения
+                </div>
+            `;
+            addMsg('assistant', '❌ Не удалось сгенерировать изображение. Попробуйте другое описание.');
+        };
+        
+        img.src = imageUrl;
+    }
+
+    function downloadImage(url, prompt) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nexus-image-${prompt.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '')}-${Date.now()}.png`;
+        a.click();
+    }
+
+    function openImageModal(url) {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        `;
+        modal.onclick = () => modal.remove();
+        
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.cssText = `
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        `;
+        
+        modal.appendChild(img);
+        document.body.appendChild(modal);
+    }
+
+    async function shareImage(url, prompt) {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Nexus AI Image',
+                    text: prompt,
+                    url: url
+                });
+            } catch (err) {
+                // User cancelled share
+            }
+        } else {
+            // Fallback to clipboard
+            await navigator.clipboard.writeText(url);
+            alert('🔗 Ссылка на изображение скопирована в буфер обмена!');
+        }
+    }
+
+    function addImageToChat(imageData, animate = true) {
+        const div = document.createElement('div');
+        div.className = 'msg ai';
+        
+        const container = document.createElement('div');
+        container.className = 'image-container';
+        container.innerHTML = `
+            <div class="image-actions">
+                <button class="image-action-btn" onclick="downloadImage('${imageData.url}', '${imageData.prompt}')" title="Скачать">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="image-action-btn" onclick="openImageModal('${imageData.url}')" title="Увеличить">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="image-action-btn" onclick="shareImage('${imageData.url}', '${imageData.prompt}')" title="Поделиться">
+                    <i class="fas fa-share"></i>
+                </button>
+            </div>
+            <img src="${imageData.url}" alt="Generated image: ${imageData.prompt}" class="generated-image">
+            <div class="image-meta">Generated by Nexus Vision Alpha | Style: ${imageData.style}</div>
+        `;
+        
+        div.appendChild(container);
+        document.getElementById('chat-window').appendChild(div);
+        scrollToBottom();
     }
 
     // ==========================================
@@ -616,7 +923,6 @@
         limitsContainer.innerHTML = '<div style="text-align:center; padding: 10px;"><i class="fas fa-spinner fa-spin"></i> Загрузка лимитов...</div>';
 
         try {
-            // BUG FIX: Удалены лишние пробелы в URL
             const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
                 headers: { 'Authorization': `Bearer ${key}` },
                 signal: AbortSignal.timeout(10000)
@@ -800,7 +1106,6 @@
                 document.getElementById('thinking-text').textContent = 
                     `🔄 ${modelCfg?.name} (попытка ${attempts}/${modelsToTry.length})`;
                 
-                // BUG FIX: Удалены лишние пробелы в URL
                 const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: { 
@@ -863,10 +1168,23 @@
             return;
         }
 
+        // Handle commands
         if (text.startsWith('/')) {
             handleCommand(text);
             input.value = '';
             return;
+        }
+
+        // Check for image generation
+        if (text.toLowerCase().startsWith('/img') || text.toLowerCase().startsWith('изобрази') || text.toLowerCase().startsWith('нарисуй')) {
+            const imagePrompt = text.replace(/^\/img\s*/i, '').replace(/^изобрази\s*/i, '').replace(/^нарисуй\s*/i, '').trim();
+            if (imagePrompt) {
+                await addMsg('user', `🎨 ${imagePrompt}`);
+                input.value = '';
+                autoResize();
+                await generateImage(imagePrompt);
+                return;
+            }
         }
 
         if (autoModelEnabled || (Date.now() - limitsCache.timestamp > 300000)) {
@@ -1060,7 +1378,13 @@
         if (history.length === 0) return alert('📭 Нечего экспортировать!');
         
         let content = `Nexus Chat Export | ${new Date().toLocaleString('ru-RU')}\nЧат: ${chat.title}\n${'='.repeat(50)}\n\n`;
-        content += history.map(msg => `[${msg.role.toUpperCase()}] ${new Date().toLocaleTimeString('ru-RU')}\n${msg.content}\n\n`).join('');
+        history.forEach(msg => {
+            if (msg.type === 'image') {
+                content += `[IMAGE] ${new Date().toLocaleTimeString('ru-RU')}\nPrompt: ${msg.content.prompt} | Style: ${msg.content.style}\nURL: ${msg.content.url}\n\n`;
+            } else {
+                content += `[${msg.role.toUpperCase()}] ${new Date().toLocaleTimeString('ru-RU')}\n${msg.content}\n\n`;
+            }
+        });
         content += `\nТокенов использовано: ${sessionTokenCount.toLocaleString('ru-RU')}`;
         
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -1072,32 +1396,54 @@
     }
 
     function handleCommand(cmd) {
-        switch(cmd) {
-            case '/clear':
-                clearChat();
-                break;
-            case '/export':
-                exportChat();
-                break;
-            case '/new':
-                createChat();
-                break;
-            case '/help':
-            case '/?':
-                showCommands();
-                break;
-            default:
-                alert(`❓ Неизвестная команда: ${cmd}\nВведите /help для списка команд`);
-        }
+    const parts = cmd.split(' ');
+    const command = parts[0];
+    const args = parts.slice(1).join(' ');
+    
+    switch(command) {
+        case '/clear':
+            clearChat();
+            break;
+        case '/export':
+            exportChat();
+            break;
+        case '/new':
+            createChat(args || null);
+            break;
+        case '/help':
+        case '/?':
+            showCommands();
+            break;
+        case '/style':
+            if (args && IMAGE_STYLES[args]) {
+                currentImageStyle = args;
+                saveChats();
+                alert(`🎨 Стиль изменен на: ${args}`);
+            } else {
+                alert(`❓ Неизвестный стиль. Доступные: ${Object.keys(IMAGE_STYLES).join(', ')}`);
+            }
+            break;
+        case '/img': // ДОБАВЛЯЕМ ОБРАБОТКУ КОМАНДЫ
+            if (args) {
+                generateImage(args);
+            } else {
+                alert('❓ Укажите описание для генерации изображения');
+            }
+            break;
+        default:
+            alert(`❓ Неизвестная команда: ${cmd}\nВведите /help для списка команд`);
     }
+}
 
     function showCommands() {
-        alert(`🤖 Доступные команды:
-        
+    alert(`🤖 Доступные команды:
+    
 /clear - Очистить чат
 /export - Экспортировать историю
-/new - Новый чат
-/help - Показать это сообщение
+/new [название] - Новый чат
+/style [стиль] - Изменить стиль генерации
+// ДОБАВЬТЕ ЭТУ СТРОКУ:
+/img <описание> - Создать изображение
 
 🎨 Режимы (Ctrl+1..4):
 • Ctrl+1 - Стандарт
@@ -1112,16 +1458,13 @@
 • Клик по 🎤 - Голосовой ввод
 • Клик по 🖼️ - Загрузить изображение
 
+🖼️ Стили генерации:
+${Object.keys(IMAGE_STYLES).join(', ')}
+
+💡 Также работает просто: "изобрази черный кот" или "нарисуй закат"
 💡 Статус моделей обновляется автоматически каждые 5 минут
 🚨 Экстренный режим: ${CONFIG.MODELS.filter(m => m.tier === 'EMG' || m.tier === 'S').length} резервных моделей`);
-    }
-
-    function updateConnectionStatus(connected) {
-        const status = document.getElementById('connection-status');
-        const indicator = document.getElementById('status-indicator');
-        status.textContent = connected ? 'Онлайн' : 'Оффлайн';
-        indicator.className = connected ? 'status-indicator connected' : 'status-indicator';
-    }
+}
 
     // ==========================================
     // VOICE RECOGNITION
