@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nexus AI | ULTRA v2.2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <style>
+        :root {
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --success: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.3);
+            --warning: #f59e0b;
+            --warning-glow: rgba(245, 158, 11, 0.3);
+            --error: #ef4444;
+            --error-glow: rgba(239, 68, 68, 0.3);
+            --emergency: #8b5cf6;
+            --emergency-glow: rgba(139, 92, 246, 0.3);
+            --bg: #0b0f1a;
+            --panel: rgba(17, 24, 39, 0.7);
+            --panel-2: rgba(31, 41, 55, 0.5);
+            --text: #f0f9ff;
+            --text-secondary: #94a3b8;
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --border: rgba(99, 102, 241, 0.2);
+            --hover: rgba(99, 102, 241, 0.1);
+            --blur: blur(12px);
+            --mobile-nav-height: 60px;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+        }
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 20%);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* === GLASSMORPHISM SIDEBAR === */
+        aside {
+            width: 320px;
+            background: var(--panel);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            z-index: 1000;
+            overflow-y: auto;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 1001;
+            width: 44px;
+            height: 44px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            color: var(--text);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .mobile-menu-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .logo {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            user-select: none;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        /* Status panel */
+        .status-panel {
+            background: var(--panel-2);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: clamp(12px, 2vw, 16px);
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+            font-size: clamp(0.75rem, 1.5vw, 0.8rem);
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .status-indicator.connected {
+            background: var(--success);
+            animation: pulse-success 2s infinite;
+        }
+
+        .status-indicator.emergency {
+            background: var(--emergency);
+            animation: pulse-success 2s infinite;
+        }
+
+        @keyframes pulse-success {
+            0%, 100% { box-shadow: 0 0 0 0 var(--success-glow); }
+            50% { box-shadow: 0 0 0 6px var(--success-glow); }
+        }
+
+        /* Model limits display */
+        .model-limits {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .model-limit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 4px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .model-limit-item.best {
+            border-color: var(--accent);
+            background: var(--hover);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .model-limit-item.unreliable {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .model-name {
+            font-size: clamp(0.7rem, 1.5vw, 0.75rem);
+            font-weight: 500;
+        }
+
+        .limit-count {
+            font-size: clamp(0.7rem, 1.5vw, 0.75rem);
+            font-weight: 600;
+        }
+
+        .limit-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--panel-2);
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .limit-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #8b5cf6);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Controls */
+        .controls-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            padding: 0 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            padding: clamp(8px, 1.5vw, 10px) clamp(10px, 1.5vw, 12px);
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text);
+            font-size: clamp(0.8rem, 1.5vw, 0.85rem);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            min-height: 44px; /* Touch target size */
+        }
+
+        .btn:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.danger:hover {
+            border-color: var(--error);
+            box-shadow: 0 4px 12px var(--error-glow);
+        }
+
+        /* Mode switches */
+        .mode-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .mode-btn {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            padding: clamp(8px, 1.5vw, 10px) clamp(10px, 1.5vw, 12px);
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: clamp(0.8rem, 1.5vw, 0.85rem);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            min-height: 44px; /* Touch target size */
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .mode-btn:hover:not(.active) {
+            background: var(--hover);
+        }
+
+        /* Main area */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+            padding-left: 0;
+            transition: padding-left 0.3s;
+        }
+
+        #chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: clamp(16px, 3vw, 24px) clamp(12px, 3vw, 24px);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(16px, 3vw, 24px);
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Enhanced thinking indicator */
+        #thinking {
+            display: none;
+            padding: clamp(12px, 2vw, 14px) clamp(16px, 3vw, 20px);
+            margin: 0 clamp(12px, 3vw, 24px) clamp(12px, 2vw, 16px);
+            background: var(--panel-2);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--accent);
+            border-radius: 14px;
+            box-shadow: 0 0 20px var(--accent-glow);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .thinking-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--accent);
+            font-size: clamp(0.85rem, 2vw, 0.9rem);
+            font-weight: 500;
+        }
+
+        .pulse {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 var(--accent-glow); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px transparent; }
+            100% { transform: scale(0.9); }
+        }
+
+        /* Messages */
+        .msg {
+            max-width: 90%;
+            line-height: 1.7;
+            animation: slideIn 0.4s ease;
+            position: relative;
+        }
+
+        .user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--panel-2), var(--panel));
+            padding: clamp(12px, 2vw, 14px) clamp(16px, 2vw, 20px);
+            border-radius: 18px;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        .ai {
+            align-self: flex-start;
+            background: transparent;
+            width: 100%;
+            border-radius: 0;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: clamp(0.75rem, 1.5vw, 0.8rem);
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .ai-avatar {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 0 8px var(--accent-glow);
+            font-size: clamp(0.75rem, 1.5vw, 0.8rem);
+        }
+
+        .ai-content {
+            color: var(--text);
+            padding-left: 32px;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+        }
+
+        /* Code blocks with glass effect */
+        .code-block-wrapper {
+            position: relative;
+            margin: 12px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--panel);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+
+        .code-block-wrapper:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .copy-btn.copied {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            padding: clamp(12px, 2vw, 16px);
+            margin: 0;
+            font-size: clamp(0.8rem, 1.5vw, 0.85rem);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Input area with glassmorphism */
+        .input-area {
+            padding: clamp(12px, 2vw, 20px) clamp(12px, 3vw, 15%);
+            background: linear-gradient(transparent, var(--bg) 60%);
+            position: relative;
+            padding-bottom: max(clamp(12px, 2vw, 20px), env(safe-area-inset-bottom));
+        }
+
+        .input-bar {
+            background: var(--input-bg);
+            backdrop-filter: var(--blur);
+            -webkit-backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 8px clamp(8px, 2vw, 14px);
+            display: flex;
+            align-items: end;
+            gap: clamp(6px, 1.5vw, 10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 8px;
+            font-size: clamp(0.9rem, 2vw, 0.95rem);
+            outline: none;
+            resize: none;
+            max-height: 120px;
+            font-family: inherit;
+            line-height: 1.4;
+        }
+
+        .send-btn, .stop-btn {
+            width: 44px; /* Increased for touch */
+            height: 44px; /* Increased for touch */
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            transition: all 0.2s;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
+        .send-btn:hover, .stop-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .stop-btn {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            box-shadow: 0 2px 8px var(--error-glow);
+        }
+
+        body.generating .send-btn { display: none; }
+        body.generating .stop-btn { display: flex; }
+
+        /* NEW: Voice button */
+        .voice-btn {
+            width: 44px; /* Increased for touch */
+            height: 44px; /* Increased for touch */
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--panel-2);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.9rem, 2vw, 1rem);
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .voice-btn:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(135deg, var(--error), #dc2626);
+            color: white;
+            border-color: var(--error);
+            animation: pulse-ring 1s infinite;
+        }
+
+        /* NEW: Style selector */
+        .style-selector {
+            display: none;
+            margin: 0 clamp(12px, 3vw, 15%) clamp(8px, 2vw, 12px);
+            padding: clamp(8px, 2vw, 10px) clamp(10px, 2vw, 14px);
+            background: var(--panel-2);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            gap: clamp(6px, 1.5vw, 10px);
+        }
+
+        .style-selector.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .style-selector select {
+            flex: 1;
+            background: var(--input-bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: clamp(0.8rem, 1.5vw, 0.85rem);
+        }
+
+        /* NEW: Image upload indicator */
+        .image-indicator {
+            background: var(--panel-2);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+            color: var(--text-secondary);
+            display: none;
+            align-items: center;
+            gap: 4px;
+            margin-left: 8px;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .image-indicator.active {
+            display: flex;
+        }
+
+        /* Token counter */
+        .token-counter-display {
+            font-size: clamp(0.6rem, 1.5vw, 0.7rem);
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* === RESPONSIVE DESIGN === */
+
+        /* Tablet & Desktop */
+        @media (min-width: 769px) {
+            body {
+                flex-direction: row;
+            }
+            main {
+                padding-left: 0;
+            }
+            .mobile-menu-toggle {
+                display: none !important;
+            }
+            .mobile-overlay {
+                display: none !important;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                padding-top: 60px; /* Space for mobile menu toggle */
+            }
+
+            /* Sidebar as overlay */
+            aside {
+                width: min(320px, 85vw);
+                max-width: 320px;
+                position: fixed;
+                left: -100%;
+                top: 0;
+                bottom: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            aside.visible {
+                left: 0;
+            }
+
+            /* Mobile menu toggle */
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            /* Overlay when sidebar open */
+            .mobile-overlay {
+                display: none;
+            }
+
+            body.sidebar-open .mobile-overlay {
+                display: block;
+            }
+
+            /* Adjust main content */
+            main {
+                width: 100%;
+                padding-left: 0 !important;
+            }
+
+            #chat-window {
+                padding: clamp(12px, 3vw, 16px);
+                gap: clamp(12px, 3vw, 16px);
+            }
+
+            /* Horizontal mode buttons on mobile */
+            .mode-container {
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 8px;
+                padding-bottom: 4px;
+            }
+
+            .mode-btn {
+                min-width: 100px;
+                flex-shrink: 0;
+                font-size: clamp(0.75rem, 1.5vw, 0.8rem);
+            }
+
+            /* Adjust input area */
+            .input-area {
+                padding: clamp(10px, 2vw, 12px);
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(transparent, var(--bg) 60%, var(--bg));
+                z-index: 100;
+            }
+
+            .input-bar {
+                border-radius: 16px;
+                gap: clamp(4px, 1vw, 6px);
+            }
+
+            textarea {
+                font-size: clamp(0.9rem, 2vw, 0.95rem);
+                max-height: 100px;
+            }
+
+            /* Ensure buttons are visible */
+            .voice-btn, .send-btn, .stop-btn {
+                width: 40px;
+                height: 40px;
+                font-size: clamp(0.8rem, 2vw, 0.9rem);
+            }
+
+            /* Adjust welcome message */
+            .welcome-msg h2 {
+                font-size: clamp(1.2rem, 4vw, 1.5rem);
+            }
+
+            .welcome-msg p {
+                font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+            }
+
+            /* Token display */
+            .token-counter-display {
+                font-size: clamp(0.55rem, 1.5vw, 0.65rem);
+            }
+
+            /* Style selector */
+            .style-selector {
+                margin: 0 clamp(10px, 2vw, 12px) clamp(8px, 2vw, 10px);
+            }
+
+            /* Image indicator */
+            .image-indicator {
+                max-width: 100px;
+                margin-left: 4px;
+            }
+        }
+
+        /* Small mobile (< 480px) */
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.1rem;
+                margin-bottom: 16px;
+            }
+
+            .status-panel {
+                padding: 12px;
+            }
+
+            .section-title {
+                font-size: 0.65rem;
+            }
+
+            .btn, .mode-btn {
+                min-height: 42px;
+                padding: 8px 10px;
+            }
+
+            .mode-btn {
+                min-width: 80px;
+            }
+
+            .voice-btn, .send-btn, .stop-btn {
+                width: 38px;
+                height: 38px;
+            }
+
+            #thinking {
+                margin: 0 12px 10px;
+            }
+        }
+
+        /* Large desktop */
+        @media (min-width: 1440px) {
+            aside {
+                width: 360px;
+            }
+            #chat-window {
+                padding: 32px 20%;
+            }
+            .input-area {
+                padding: 24px 20%;
+            }
+        }
+
+        /* Swipe indicator for mobile */
+        .swipe-hint {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 4px;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            opacity: 0.6;
+        }
+
+        @media (max-width: 768px) {
+            .swipe-hint {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Mobile Menu Toggle -->
+<button class="mobile-menu-toggle" onclick="toggleSidebar()" aria-label="Меню">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside id="sidebar">
+    <div class="logo"><i class="fas fa-terminal"></i> NEXUS ULTRA v2.2</div>
+    
+    <div class="status-panel">
+        <div class="status-item">
+            <span>Статус:</span>
+            <span id="connection-status">Оффлайн</span>
+            <span id="status-indicator" class="status-indicator"></span>
+        </div>
+        <div class="status-item">
+            <span>Режим:</span>
+            <span id="current-mode-display">Нормальный</span>
+        </div>
+        <div class="status-item">
+            <span>Токенов:</span>
+            <span id="token-counter">0</span>
+        </div>
+        <div class="token-counter-display">
+            Использовано за сессию: <span id="session-tokens">0</span>
+        </div>
+    </div>
+
+    <div class="controls-section">
+        <div class="section-title">Управление</div>
+        <button class="btn" onclick="toggleAutoModel()">
+            <i class="fas fa-robot" id="auto-model-icon"></i> <span id="auto-model-text">Вкл авто-выбор</span>
+        </button>
+        <button class="btn" onclick="clearChat()">
+            <i class="fas fa-trash"></i> Очистить чат
+        </button>
+        <button class="btn" onclick="exportChat()">
+            <i class="fas fa-download"></i> Экспорт
+        </button>
+        <button class="btn" onclick="showCommands()">
+            <i class="fas fa-question-circle"></i> Команды
+        </button>
+    </div>
+
+    <div class="controls-section">
+        <div class="section-title">Лимиты моделей <span id="limits-refresh-time"></span></div>
+        <div class="model-limits" id="model-limits"></div>
+        <button class="btn" onclick="updateAllLimits()" style="margin-top: 8px;">
+            <i class="fas fa-sync"></i> Обновить лимиты
+        </button>
+    </div>
+
+    <div class="controls-section">
+        <div class="section-title">Режимы</div>
+        <div class="mode-container">
+            <div id="mode-normal" class="mode-btn active" onclick="setMode('normal')">
+                <i class="fas fa-bolt"></i> Стандарт
+            </div>
+            <div id="mode-search" class="mode-btn" onclick="setMode('search')">
+                <i class="fas fa-search"></i> Поиск
+            </div>
+            <div id="mode-deep" class="mode-btn" onclick="setMode('deep')">
+                <i class="fas fa-brain"></i> Глубокий
+            </div>
+            <div id="mode-art" class="mode-btn" onclick="setMode('art')">
+                <i class="fas fa-palette"></i> Художник
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: auto;">
+        <div class="section-title">API Key</div>
+        <input type="password" id="key" class="key-input" placeholder="sk-or-..." style="width: 100%; padding: 10px; border-radius: 10px; background: var(--input-bg); border: 1px solid var(--border); color: var(--text);">
+    </div>
+</aside>
+
+<!-- Swipe hint -->
+<div class="swipe-hint">
+    <i class="fas fa-chevron-right"></i> Свайп
+</div>
+
+<main>
+    <div id="chat-window" role="log">
+        <div class="welcome-msg">
+            <h2>🚀 Nexus Ultra v2.2</h2>
+            <p>Введите API ключ и система автоматически выберет лучшую модель</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px;">
+                <i class="fas fa-info-circle"></i> 12+ моделей | Умная маршрутизация | Кэш лимитов | Экстренный режим
+            </p>
+        </div>
+    </div>
+
+    <div id="thinking" role="status">
+        <div class="thinking-content">
+            <div class="pulse"></div>
+            <span id="thinking-text">Анализ...</span>
+        </div>
+    </div>
+
+    <!-- NEW: Style selector for Art mode -->
+    <div class="style-selector" id="style-selector">
+        <select id="art-style-select">
+            <option value="">Выберите стиль...</option>
+            <option value="oil_painting">🎨 Масло (Рембрандт)</option>
+            <option value="watercolor">💧 Акварель (Импрессионизм)</option>
+            <option value="cyberpunk">🌃 Киберпанк</option>
+            <option value="vangogh">🌻 Ван Гог</option>
+            <option value="ghibli">🏮 Аниме (Гибли)</option>
+            <option value="sketch">✏️ Карандашный эскиз</option>
+        </select>
+    </div>
+
+    <div class="input-area">
+        <div class="input-bar">
+            <!-- NEW: Image upload -->
+            <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+            <button class="voice-btn" onclick="document.getElementById('image-upload').click()" title="Загрузить изображение">
+                <i class="fas fa-image"></i>
+            </button>
+            
+            <textarea id="u-in" placeholder="Введите сообщение..." rows="1"></textarea>
+            
+            <!-- Image upload indicator -->
+            <div class="image-indicator" id="image-indicator">
+                <i class="fas fa-image"></i> <span id="image-name">Файр загружен</span>
+            </div>
+            
+            <!-- NEW: Voice button -->
+            <button class="voice-btn" id="voice-btn" onclick="toggleVoiceRecording()" title="Голосовой ввод">
+                <i class="fas fa-microphone"></i>
+            </button>
+            
+            <button class="send-btn" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+            <button class="stop-btn" onclick="stopGeneration()"><i class="fas fa-stop"></i></button>
+        </div>
+    </div>
+</main>
+
+<script>
+    // ==========================================
+    // SIDEBAR TOGGLE FOR MOBILE
+    // ==========================================
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        const isOpen = sidebar.classList.contains('visible');
+        
+        if (isOpen) {
+            closeSidebar();
+        } else {
+            sidebar.classList.add('visible');
+            overlay.classList.add('active');
+            document.body.classList.add('sidebar-open');
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+        sidebar.classList.remove('visible');
+        overlay.classList.remove('active');
+        document.body.classList.remove('sidebar-open');
+    }
+
+    // Swipe to open sidebar on mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+
+    function handleSwipe() {
+        const screenWidth = window.innerWidth;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        // Swipe right from left edge to open
+        if (swipeDistance > 50 && touchStartX < 20) {
+            toggleSidebar();
+        }
+        
+        // Swipe left to close
+        if (swipeDistance < -50 && touchStartX > screenWidth - 20) {
+            closeSidebar();
+        }
+    }
+
+    // Close sidebar on window resize to desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            closeSidebar();
+        }
+    });
+
+    // ==========================================
+    // NEW: ART ASSISTANT FEATURES
+    // ==========================================
+    const STYLES_DB = {
+        'oil_painting': {
+            name: 'Масло (Рембрандт)',
+            prompt: 'Professional oil painting style, classical realism, rich textures, Rembrandt lighting, masterpiece quality, detailed brushwork'
+        },
+        'watercolor': {
+            name: 'Акварель (Импрессионизм)',
+            prompt: 'Beautiful watercolor technique, soft washes, translucent layers, impressionistic style, fluid and expressive'
+        },
+        'cyberpunk': {
+            name: 'Киберпанк',
+            prompt: 'Cyberpunk aesthetic, neon lights, rain-slicked streets, Blade Runner style, dystopian future, high contrast, vivid colors'
+        },
+        'vangogh': {
+            name: 'Ван Гог',
+            prompt: 'Van Gogh painting style, bold expressive brushstrokes, vibrant colors, post-impressionist, emotional intensity'
+        },
+        'ghibli': {
+            name: 'Аниме (Гибли)',
+            prompt: 'Studio Ghibli anime style, soft pastel colors, detailed backgrounds, whimsical, magical atmosphere, hand-drawn aesthetic'
+        },
+        'sketch': {
+            name: 'Карандашный эскиз',
+            prompt: 'Detailed pencil sketch, artistic line art, professional shading, cross-hatching, monochromatic mastery'
+        }
+    };
+
+    // ==========================================
+    // NEW: SMART ROUTING SYSTEM + 12 MODELS
+    // ==========================================
+    const MODEL_PRIORITIES = {
+        'code': ['deepseek/deepseek-chat:free', 'meta-llama/llama-3.3-70b-instruct:free', 'qwen/qwen-2.5-72b-instruct:free', 'anthropic/claude-3-haiku:free'],
+        'creative': ['google/gemini-flash-1.5:free', 'mistralai/mistral-7b-instruct:free', 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo:free', 'cohere/command-r:free'],
+        'analysis': ['qwen/qwen-2.5-72b-instruct:free', 'meta-llama/llama-3.3-70b-instruct:free', 'deepseek/deepseek-chat:free'],
+        'art': ['google/gemini-flash-1.5:free', 'qwen/qwen-2.5-72b-instruct:free', 'mistralai/mistral-7b-instruct:free'],
+        'default': ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemini-flash-1.5:free', 'qwen/qwen-2.5-72b-instruct:free', 'mistralai/mistral-7b-instruct:free']
+    };
+
+    // EXTENDED MODEL LIST WITH 12 MODELS
+    const CONFIG = {
+        MAX_HISTORY_LEN: 50,
+        TYPING_SPEED: 30,
+        MODELS: [
+            { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B', free: true, vision: false, reliable: true },
+            { id: 'google/gemini-flash-1.5:free', name: 'Gemini Flash', free: true, vision: true, reliable: true },
+            { id: 'qwen/qwen-2.5-72b-instruct:free', name: 'Qwen 2.5 72B', free: true, vision: false, reliable: true },
+            { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', free: true, vision: false, reliable: false },
+            { id: 'openchat/openchat-7b:free', name: 'OpenChat 7B', free: true, vision: false, reliable: false },
+            { id: 'gryphe/mythomist-7b:free', name: 'MythoMist 7B', free: true, vision: false, reliable: false },
+            // NEW MODELS
+            { id: 'deepseek/deepseek-chat:free', name: 'DeepSeek Chat', free: true, vision: false, reliable: true },
+            { id: 'anthropic/claude-3-haiku:free', name: 'Claude 3 Haiku', free: true, vision: false, reliable: true },
+            { id: 'cohere/command-r:free', name: 'Command R', free: true, vision: false, reliable: false },
+            { id: 'microsoft/phi-3-medium-128k-instruct:free', name: 'Phi-3 Medium', free: true, vision: false, reliable: false },
+            { id: 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo:free', name: 'Nous Hermes', free: true, vision: false, reliable: false },
+            { id: 'jondurbin/airoboros-l2-70b:free', name: 'Airoboros 70B', free: true, vision: false, reliable: false }
+        ]
+    };
+
+    let history = [];
+    let currentMode = 'normal';
+    let autoModelEnabled = false;
+    let modelLimits = {};
+    let abortController = null;
+    let uploadedImage = null;
+    let sessionTokenCount = 0;
+    let limitsCache = { data: null, timestamp: 0 };
+
+    // ==========================================
+    // NEW: ADVANCED ERROR HANDLING & LIMITS CACHE
+    // ==========================================
+
+    // Cache limits for 5 minutes
+    async function fetchLimitsWithCache(key) {
+        const now = Date.now();
+        const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+        if (limitsCache.data && (now - limitsCache.timestamp) < CACHE_TTL) {
+            return limitsCache.data;
+        }
+
+        try {
+            const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
+                headers: { 'Authorization': `Bearer ${key}` },
+                signal: AbortSignal.timeout(10000) // 10s timeout
+            });
+
+            if (!res.ok) {
+                if (res.status === 401) throw new Error('Неверный API ключ (401)');
+                if (res.status === 429) throw new Error('Слишком много запросов к API (429)');
+                if (res.status === 503) throw new Error('API временно недоступен (503)');
+                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+            }
+
+            const data = await res.json();
+            limitsCache = { data, timestamp: now };
+            return data;
+        } catch (e) {
+            if (e.name === 'TimeoutError') {
+                throw new Error('Таймаут запроса (API не отвечает)');
+            }
+            throw e;
+        }
+    }
+
+    // Emergency mode when all limits exhausted
+    function getEmergencyModel() {
+        return CONFIG.MODELS.find(m => m.reliable) || CONFIG.MODELS[0];
+    }
+
+    // ==========================================
+    // VOICE RECOGNITION
+    // ==========================================
+    let recognition = null;
+    let isRecording = false;
+
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.lang = 'ru-RU';
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = () => {
+            isRecording = true;
+            document.getElementById('voice-btn').classList.add('recording');
+            document.getElementById('voice-btn').innerHTML = '<i class="fas fa-stop"></i>';
+        };
+
+        recognition.onresult = (event) => {
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                }
+            }
+            if (finalTranscript) {
+                document.getElementById('u-in').value = finalTranscript;
+                autoResize();
+            }
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            document.getElementById('voice-btn').classList.remove('recording');
+            document.getElementById('voice-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+            setTimeout(() => {
+                if (document.getElementById('u-in').value.trim()) {
+                    send();
+                }
+            }, 500);
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Voice error:', event.error);
+            isRecording = false;
+            document.getElementById('voice-btn').classList.remove('recording');
+            document.getElementById('voice-btn').innerHTML = '<i class="fas fa-microphone"></i>';
+            addMsg('assistant', `🎤 Ошибка распознавания: ${event.error}`);
+        };
+    }
+
+    function toggleVoiceRecording() {
+        if (!recognition) {
+            alert('🎤 Голосовой ввод не поддерживается в этом браузере. Используйте Chrome или Edge.');
+            return;
+        }
+        
+        if (isRecording) {
+            recognition.stop();
+        } else {
+            document.getElementById('u-in').value = '';
+            recognition.start();
+        }
+    }
+
+    // ==========================================
+    // CORE FUNCTIONS
+    // ==========================================
+    function detectQueryType(text) {
+        const lower = text.toLowerCase();
+        if (lower.match(/(function|class|const|let|var|return|import|export|python|javascript|code|console\.log|def|if|else|async|await|api|library|framework)/)) {
+            return 'code';
+        }
+        if (lower.match(/(описание|нарисуй|стиль|цвет|композиция|художник|творчество|art|paint|draw|style|composition|illustration|drawing|sketch|design|visual)/)) {
+            return 'art';
+        }
+        if (lower.match(/(анализ|исследование|вглубь|теория|research|analyze|deep|theory|critical|comprehensive|detailed)/)) {
+            return 'analysis';
+        }
+        if (lower.match(/(творческ|креатив|creative|imagine|visualize|innovative|inspiration|idea|brainstorm)/)) {
+            return 'creative';
+        }
+        return 'default';
+    }
+
+    function autoResize() {
+        const input = document.getElementById('u-in');
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    }
+
+    async function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('❌ Файл слишком большой! Максимум 5MB');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            uploadedImage = e.target.result;
+            const indicator = document.getElementById('image-indicator');
+            document.getElementById('image-name').textContent = file.name.substring(0, 12) + (file.name.length > 12 ? '...' : '');
+            indicator.classList.add('active');
+            setMode('art');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ==========================================
+    // LIMITS & MODEL MANAGEMENT
+    // ==========================================
+    async function updateAllLimits(force = false) {
+        const key = document.getElementById('key').value.trim();
+        if (!key) {
+            alert('🔑 Введите API ключ!');
+            return;
+        }
+
+        const limitsContainer = document.getElementById('model-limits');
+        limitsContainer.innerHTML = '<div style="text-align:center; padding: 10px;"><i class="fas fa-spinner fa-spin"></i> Загрузка лимитов...</div>';
+
+        try {
+            const data = await fetchLimitsWithCache(key);
+            
+            modelLimits = {};
+            let totalRemaining = 0;
+            let reliableCount = 0;
+
+            CONFIG.MODELS.forEach(model => {
+                const modelData = data.data?.models?.[model.id];
+                let used = 0, limit = 0, remaining = Infinity;
+
+                if (modelData) {
+                    used = modelData.usage || 0;
+                    limit = modelData.limit || 0;
+                    remaining = Math.max(0, limit - used);
+                }
+
+                modelLimits[model.id] = { used, limit, remaining };
+                totalRemaining += remaining;
+                if (model.reliable && remaining > 0) reliableCount++;
+            });
+
+            renderLimits();
+            updateConnectionStatus(totalRemaining > 0);
+            
+            // Show refresh time
+            const refreshTime = new Date(limitsCache.timestamp + 5 * 60 * 1000).toLocaleTimeString('ru-RU', { minute: '2-digit', second: '2-digit' });
+            document.getElementById('limits-refresh-time').textContent = `(авто до ${refreshTime})`;
+
+        } catch (e) {
+            console.error('Ошибка загрузки лимитов:', e);
+            limitsContainer.innerHTML = `<div style="color:var(--error); padding: 10px;">❌ ${e.message}</div>`;
+            updateConnectionStatus(false);
+        }
+    }
+
+    function renderLimits() {
+        const container = document.getElementById('model-limits');
+        container.innerHTML = '';
+        
+        let bestModel = null;
+        let maxRemaining = -1;
+        let totalRemaining = 0;
+        
+        CONFIG.MODELS.forEach(model => {
+            const limit = modelLimits[model.id] || { remaining: Infinity };
+            if (limit.remaining > maxRemaining) {
+                maxRemaining = limit.remaining;
+                bestModel = model.id;
+            }
+            totalRemaining += limit.remaining;
+        });
+
+        // Emergency mode if all limits exhausted
+        if (totalRemaining === 0) {
+            document.getElementById('connection-status').textContent = 'ЭКСТРЕННЫЙ';
+            document.getElementById('status-indicator').className = 'status-indicator emergency';
+            document.getElementById('auto-model-status').textContent = 'ЭМЕР';
+        }
+
+        CONFIG.MODELS.forEach(model => {
+            const limit = modelLimits[model.id] || { remaining: 0, limit: 0 };
+            const percentage = limit.limit > 0 ? (limit.remaining / limit.limit) * 100 : 100;
+            
+            const item = document.createElement('div');
+            item.className = 'model-limit-item';
+            if (model.id === bestModel) item.classList.add('best');
+            if (!model.reliable) item.classList.add('unreliable');
+            
+            item.innerHTML = `
+                <div style="flex:1;">
+                    <div class="model-name" title="${model.id}">
+                        ${model.name} ${model.reliable ? '✓' : '?'} ${model.id === bestModel ? '⭐' : ''}
+                    </div>
+                    <div class="limit-bar">
+                        <div class="limit-fill" style="width:${percentage}%"></div>
+                    </div>
+                </div>
+                <div class="limit-count" style="margin-left:8px;">
+                    ${limit.remaining === Infinity ? '∞' : limit.remaining}
+                </div>
+            `;
+            container.appendChild(item);
+        });
+
+        document.getElementById('auto-model-status').textContent = 
+            autoModelEnabled && bestModel ? 
+            CONFIG.MODELS.find(m => m.id === bestModel)?.name.split(' ')[0] : 
+            'Выкл';
+    }
+
+    function toggleAutoModel() {
+        autoModelEnabled = !autoModelEnabled;
+        const icon = document.getElementById('auto-model-icon');
+        const text = document.getElementById('auto-model-text');
+        
+        if (autoModelEnabled) {
+            icon.style.color = 'var(--success)';
+            text.textContent = 'Выкл авто-выбор';
+            updateAllLimits();
+        } else {
+            icon.style.color = 'var(--text-secondary)';
+            text.textContent = 'Вкл авто-выбор';
+        }
+        
+        localStorage.setItem('nexus_auto_model', autoModelEnabled);
+    }
+
+    function getBestModel(queryType = null) {
+        if (!autoModelEnabled && !queryType) return CONFIG.MODELS[0].id;
+        
+        const type = queryType || detectQueryType(input.value);
+        const priorities = MODEL_PRIORITIES[type] || MODEL_PRIORITIES['default'];
+        
+        // Count total remaining tokens
+        const totalRemaining = Object.values(modelLimits).reduce((sum, limit) => sum + limit.remaining, 0);
+        
+        // Emergency mode - use most reliable model
+        if (totalRemaining === 0) {
+            const emergencyModel = getEmergencyModel();
+            return emergencyModel.id;
+        }
+        
+        // Find available model with highest priority
+        for (let modelId of priorities) {
+            const model = CONFIG.MODELS.find(m => m.id === modelId);
+            const limit = modelLimits[modelId];
+            
+            if (!limit || limit.remaining <= 0) continue;
+            if (currentMode === 'art' && uploadedImage && !model.vision) continue;
+            
+            return modelId;
+        }
+        
+        // Fallback to any available model
+        for (let model of CONFIG.MODELS) {
+            const limit = modelLimits[model.id];
+            if (limit && limit.remaining > 0) {
+                return model.id;
+            }
+        }
+        
+        return getEmergencyModel().id;
+    }
+
+    // ==========================================
+    // GENERATION WITH FALLBACK
+    // ==========================================
+    async function generateWithFallback(messages, model, key, queryType) {
+        const priorities = MODEL_PRIORITIES[queryType] || MODEL_PRIORITIES['default'];
+        const modelsToTry = [model, ...priorities.filter(m => m !== model)];
+        
+        let lastError = null;
+
+        for (let i = 0; i < modelsToTry.length; i++) {
+            const currentModel = modelsToTry[i];
+            const modelCfg = CONFIG.MODELS.find(m => m.id === currentModel);
+            const limit = modelLimits[currentModel];
+            
+            // Skip if no limit data or exhausted
+            if (!limit || limit.remaining <= 0) {
+                document.getElementById('thinking-text').textContent = `Пропуск ${modelCfg?.name} (лимит)`;
+                await new Promise(r => setTimeout(r, 200));
+                continue;
+            }
+
+            // Skip non-vision for images
+            if (currentMode === 'art' && uploadedImage && !modelCfg.vision) {
+                continue;
+            }
+
+            try {
+                document.getElementById('thinking-text').textContent = 
+                    `🔄 ${modelCfg?.name} (попытка ${i + 1}/${modelsToTry.length})`;
+                
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                    method: "POST",
+                    headers: { 
+                        "Authorization": `Bearer ${key}`, 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({ 
+                        model: currentModel, 
+                        messages,
+                        temperature: queryType === 'art' ? 0.8 : 0.7
+                    }),
+                    signal: abortController?.signal || null
+                });
+
+                if (!res.ok) {
+                    if (res.status === 429) {
+                        throw new Error(`Лимит запросов для ${modelCfg?.name}`);
+                    }
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                
+                const data = await res.json();
+                
+                if (!data.choices?.[0]?.message?.content) {
+                    throw new Error('Пустой ответ от модели');
+                }
+
+                // Update token counter
+                const tokens = data.usage?.total_tokens || 0;
+                sessionTokenCount += tokens;
+                document.getElementById('session-tokens').textContent = sessionTokenCount.toLocaleString('ru-RU');
+                
+                return { data, model: currentModel };
+                
+            } catch (e) {
+                console.warn(`❌ Ошибка ${modelCfg?.name}:`, e);
+                lastError = e;
+                if (e.name === 'AbortError') throw e;
+                
+                if (i < modelsToTry.length - 1) {
+                    document.getElementById('thinking-text').textContent = 
+                        `⚠️ ${e.message}. Пробую другую модель...`;
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+        }
+        
+        throw lastError || new Error('Все доступные модели недоступны');
+    }
+
+    // ==========================================
+    // SEND FUNCTION
+    // ==========================================
+    async function send() {
+        const text = input.value.trim();
+        const key = document.getElementById('key').value.trim();
+        
+        if (!text || !key) {
+            if (!key) alert('🔑 Введите API ключ!');
+            return;
+        }
+
+        if (text.startsWith('/')) {
+            handleCommand(text);
+            input.value = '';
+            return;
+        }
+
+        // Auto-update limits if needed
+        if (autoModelEnabled || (Date.now() - limitsCache.timestamp > 300000)) {
+            await updateAllLimits();
+        }
+
+        // Enhanced prompt
+        let enhancedText = text;
+        if (currentMode === 'art') {
+            const styleKey = document.getElementById('art-style-select').value;
+            if (styleKey && STYLES_DB[styleKey]) {
+                enhancedText = `${text}, ${STYLES_DB[styleKey].prompt}`;
+            }
+            if (uploadedImage) {
+                enhancedText = `Analyze this artwork and provide constructive feedback. User: ${text}`;
+            }
+        }
+
+        await addMsg('user', uploadedImage ? `🖼️ ${text}` : text);
+        input.value = '';
+        autoResize();
+        
+        const uploadedImageTemp = uploadedImage;
+        uploadedImage = null;
+        document.getElementById('image-indicator').classList.remove('active');
+        
+        localStorage.setItem('nexus_key', key);
+
+        const queryType = detectQueryType(text);
+        const systemPrompt = {
+            normal: "You are Nexus AI. Respond concisely and accurately.",
+            search: "You are in Search mode. Provide factual data and lists.",
+            deep: "You are in Deep Analysis mode. Provide detailed technical explanations.",
+            art: "You are an expert Art Assistant. Provide creative suggestions, artistic critique, and detailed visual descriptions."
+        }[currentMode];
+
+        let messages = [{ role: "system", content: systemPrompt }, ...history];
+        
+        const selectedModel = getBestModel(queryType);
+        const modelCfg = CONFIG.MODELS.find(m => m.id === selectedModel);
+
+        if (currentMode === 'art' && uploadedImageTemp && modelCfg.vision) {
+            messages.push({
+                role: "user",
+                content: [
+                    { type: "text", text: enhancedText },
+                    { type: "image_url", image_url: { url: uploadedImageTemp } }
+                ]
+            });
+        } else {
+            messages.push({ role: "user", content: enhancedText });
+        }
+
+        document.getElementById('thinking').style.display = 'block';
+        document.body.classList.add('generating');
+        abortController = new AbortController();
+
+        try {
+            const { data, model: usedModel } = await generateWithFallback(messages, selectedModel, key, queryType);
+            const aiText = data.choices[0].message.content;
+            
+            history.push({ role: "user", content: enhancedText }, { role: "assistant", content: aiText });
+            if (history.length > CONFIG.MAX_HISTORY_LEN) history = history.slice(-CONFIG.MAX_HISTORY_LEN);
+            
+            await addMsg('assistant', aiText);
+            localStorage.setItem('nexus_history', JSON.stringify(history));
+            
+            document.getElementById('thinking-text').textContent = 
+                `✅ Готово (${CONFIG.MODELS.find(m => m.id === usedModel)?.name})`;
+            setTimeout(() => document.getElementById('thinking').style.display = 'none', 2000);
+            
+        } catch (e) {
+            if (e.name === 'AbortError') {
+                addMsg('assistant', '⏹️ Генерация остановлена пользователем.');
+            } else {
+                addMsg('assistant', `❌ Критическая ошибка: ${e.message}. Попробуйте /help`);
+            }
+        } finally {
+            setTimeout(() => {
+                document.getElementById('thinking').style.display = 'none';
+                document.body.classList.remove('generating');
+            }, 500);
+        }
+    }
+
+    function stopGeneration() {
+        if (abortController) abortController.abort();
+    }
+
+    // ==========================================
+    // UI FUNCTIONS
+    // ==========================================
+    async function addMsg(role, text) {
+        const div = document.createElement('div');
+        div.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
+        
+        if (role === 'assistant') {
+            div.innerHTML = `
+                <div class="ai-header">
+                    <div class="ai-avatar"><i class="fas fa-terminal"></i></div> NEXUS
+                </div>
+                <div class="ai-content"></div>
+            `;
+            document.getElementById('chat-window').appendChild(div);
+            const content = div.querySelector('.ai-content');
+            await typeWriter(content, text);
+            content.innerHTML = marked.parse(text);
+            addCopyButtons(content);
+            content.querySelectorAll('pre code').forEach(block => Prism.highlightElement(block));
+        } else {
+            div.textContent = text;
+            document.getElementById('chat-window').appendChild(div);
+        }
+        
+        div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    async function typeWriter(element, text) {
+        const words = text.split(' ');
+        for (let word of words) {
+            element.textContent += word + ' ';
+            await new Promise(r => setTimeout(r, CONFIG.TYPING_SPEED));
+            element.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+    }
+
+    function addCopyButtons(container) {
+        container.querySelectorAll('pre').forEach(pre => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'code-block-wrapper';
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            
+            const button = document.createElement('button');
+            button.className = 'copy-btn';
+            button.innerHTML = '<i class="fas fa-copy"></i>';
+            button.onclick = async () => {
+                await navigator.clipboard.writeText(pre.textContent);
+                button.classList.add('copied');
+                button.innerHTML = '<i class="fas fa-check"></i> Скопировано!';
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            };
+            wrapper.appendChild(button);
+        });
+    }
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('mode-' + mode).classList.add('active');
+        
+        const modeNames = { normal: 'Стандарт', search: 'Поиск', deep: 'Глубокий', art: 'Художник' };
+        document.getElementById('current-mode-display').textContent = modeNames[mode];
+        
+        const styleSelector = document.getElementById('style-selector');
+        styleSelector.classList.toggle('active', mode === 'art');
+        
+        // Close sidebar on mobile after mode selection
+        if (window.innerWidth <= 768) {
+            setTimeout(closeSidebar, 300);
+        }
+    }
+
+    function clearChat() {
+        if (history.length > 0 && !confirm('⚠️ Вы уверены?')) return;
+        history = [];
+        sessionTokenCount = 0;
+        document.getElementById('chat-window').innerHTML = '<div class="welcome-msg"><h2>🚀 Чат очищен</h2><p>Можно начать новую беседу</p></div>';
+        localStorage.removeItem('nexus_history');
+        document.getElementById('session-tokens').textContent = '0';
+        uploadedImage = null;
+        document.getElementById('image-indicator').classList.remove('active');
+    }
+
+    function exportChat() {
+        if (history.length === 0) return alert('📭 Нечего экспортировать!');
+        let content = `Nexus Chat Export | ${new Date().toLocaleString('ru-RU')}\n${'='.repeat(50)}\n\n`;
+        content += history.map(msg => `[${msg.role.toUpperCase()}] ${new Date().toLocaleTimeString('ru-RU')}\n${msg.content}\n\n`).join('');
+        content += `\nТокенов использовано: ${sessionTokenCount.toLocaleString('ru-RU')}`;
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `nexus-chat-${new Date().toISOString().slice(0,10)}.txt`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    function handleCommand(cmd) {
+        switch(cmd) {
+            case '/clear':
+                clearChat();
+                break;
+            case '/export':
+                exportChat();
+                break;
+            case '/help':
+            case '/?':
+                showCommands();
+                break;
+            default:
+                alert(`❓ Неизвестная команда: ${cmd}\nВведите /help для списка команд`);
+        }
+    }
+
+    function showCommands() {
+        alert(`🤖 Доступные команды:
+        
+/clear - Очистить чат
+/export - Экспортировать историю
+/help - Показать это сообщение
+
+🎨 Режимы (Ctrl+1..4):
+• Ctrl+1 - Стандарт
+• Ctrl+2 - Поиск
+• Ctrl+3 - Глубокий анализ
+• Ctrl+4 - Художник
+
+⌨️ Горячие клавиши:
+• Ctrl+L - Очистить чат
+• Ctrl+S - Экспорт
+• Клик по 🎤 - Голосовой ввод
+• Клик по 🖼️ - Загрузить изображение
+
+💡 Статус моделей обновляется автоматически каждые 5 минут`);
+    }
+
+    function updateConnectionStatus(connected) {
+        const status = document.getElementById('connection-status');
+        const indicator = document.getElementById('status-indicator');
+        status.textContent = connected ? 'Онлайн' : 'Оффлайн';
+        indicator.className = connected ? 'status-indicator connected' : 'status-indicator';
+    }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+    window.addEventListener('load', () => {
+        const savedKey = localStorage.getItem('nexus_key');
+        if (savedKey) {
+            document.getElementById('key').value = savedKey;
+            updateAllLimits();
+        }
+        
+        autoModelEnabled = localStorage.getItem('nexus_auto_model') === 'true';
+        if (autoModelEnabled) {
+            document.getElementById('auto-model-icon').style.color = 'var(--success)';
+            document.getElementById('auto-model-text').textContent = 'Выкл авто-выбор';
+        }
+        
+        const saved = localStorage.getItem('nexus_history');
+        if (saved) {
+            history = JSON.parse(saved);
+            if (history.length > 0) {
+                document.getElementById('chat-window').innerHTML = '';
+                history.forEach(msg => addMsg(msg.role, msg.content));
+            }
+        }
+
+        // Auto-refresh limits every 5 minutes
+        setInterval(() => {
+            if (document.getElementById('key').value.trim() && autoModelEnabled) {
+                updateAllLimits();
+            }
+        }, 5 * 60 * 1000);
+    });
+
+    // Event listeners
+    const input = document.getElementById('u-in');
+    input.addEventListener('input', autoResize);
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            send();
+        }
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && e.key === 'l') {
+            e.preventDefault();
+            clearChat();
+        }
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            exportChat();
+        }
+        if (e.ctrlKey && e.key >= '1' && e.key <= '4') {
+            e.preventDefault();
+            const modes = ['normal', 'search', 'deep', 'art'];
+            setMode(modes[parseInt(e.key) - 1]);
+        }
+    });
+</script>
+</body>
+</html>
