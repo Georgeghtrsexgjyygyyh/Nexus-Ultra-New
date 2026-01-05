@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nexus AI | ULTRA v3.2</title>
+    <title>Nexus AI | ULTRA v3.3</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css ">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css ">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js "></script>
     <style>
         /* Исправленные и новые анимации */
         .msg { animation: fadeIn 0.4s ease !important; }
@@ -49,6 +49,7 @@
             backdrop-filter: var(--blur);
             -webkit-backdrop-filter: var(--blur);
             animation: fadeIn 0.3s ease;
+            cursor: pointer; /* NEW: Указатель для клика */
         }
         
         .image-skeleton {
@@ -74,7 +75,12 @@
             border-radius: 14px;
             opacity: 0;
             animation: mosaicReveal 0.8s ease-out forwards;
-            display: block; /* FIX: Убирает пробел под изображением */
+            display: block;
+            transition: transform 0.3s ease; /* NEW: Плавное увеличение */
+        }
+        
+        .generated-image:hover {
+            transform: scale(1.02); /* NEW: Легкое увеличение при наведении */
         }
         
         .image-actions {
@@ -129,7 +135,6 @@
             gap: 8px;
         }
         
-        /* Быстрая кнопка сохранения */
         .quick-save-btn {
             background: var(--success);
             color: white;
@@ -145,7 +150,7 @@
         }
         
         .quick-save-btn:hover {
-            background: #059669; /* Темнее при наведении */
+            background: #059669;
             transform: translateY(-1px);
         }
         
@@ -168,7 +173,7 @@
             outline: none;
         }
         
-        /* Модальное окно для изображений */
+        /* Улучшенное модальное окно для изображений */
         .image-modal {
             position: fixed;
             top: 0;
@@ -193,6 +198,7 @@
             object-fit: contain;
             border-radius: 8px;
             animation: mosaicReveal 0.5s ease;
+            cursor: zoom-out; /* NEW: Указатель зума */
         }
         
         .image-modal-close {
@@ -210,6 +216,7 @@
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
+            z-index: 2001; /* NEW: Выше изображения */
         }
         
         .image-modal-close:hover {
@@ -352,7 +359,6 @@
         pre { background: rgba(0, 0, 0, 0.4); padding: clamp(12px, 2vw, 16px); margin: 0; font-size: clamp(0.8rem, 1.5vw, 0.85rem); overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .input-area { padding: clamp(12px, 2vw, 20px) clamp(12px, 3vw, 15%); background: linear-gradient(transparent, var(--bg) 60%); position: relative; padding-bottom: max(clamp(12px, 2vw, 20px), env(safe-area-inset-bottom)); }
         .input-bar { background: var(--input-bg); backdrop-filter: var(--blur); -webkit-backdrop-filter: var(--blur); border: 1px solid var(--border); border-radius: 18px; padding: 8px clamp(8px, 2vw, 14px); display: flex; align-items: end; gap: clamp(6px, 1.5vw, 10px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: border-color 0.2s, box-shadow 0.2s; }
-        .input-bar:focus-within { border-color: var(--accent); box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2); }
         textarea { flex: 1; background: transparent; border: none; color: white; padding: 8px; font-size: clamp(0.9rem, 2vw, 0.95rem); outline: none; resize: none; max-height: 120px; font-family: inherit; line-height: 1.4; }
         .send-btn, .stop-btn { width: 44px; height: 44px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--accent), #8b5cf6); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: clamp(0.9rem, 2vw, 1rem); transition: all 0.2s; flex-shrink: 0; box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3); }
         .send-btn:hover, .stop-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--accent-glow); }
@@ -462,7 +468,7 @@
 
 <!-- Sidebar -->
 <aside id="sidebar">
-    <div class="logo"><i class="fas fa-terminal"></i> NEXUS ULTRA v3.2</div>
+    <div class="logo"><i class="fas fa-terminal"></i> NEXUS ULTRA v3.3</div>
     
     <!-- NEW: Chat list -->
     <div class="controls-section">
@@ -496,6 +502,10 @@
         <div class="section-title">Управление</div>
         <button class="btn" onclick="toggleAutoModel()">
             <i class="fas fa-robot" id="auto-model-icon"></i> <span id="auto-model-text">Вкл авто-выбор</span>
+        </button>
+        <!-- NEW: HD Mode button -->
+        <button class="btn" onclick="toggleHdMode()">
+            <i class="fas fa-hd" id="hd-mode-icon"></i> <span id="hd-mode-text">HD Режим</span>
         </button>
         <button class="btn" onclick="clearChat()">
             <i class="fas fa-trash"></i> Очистить чат
@@ -548,10 +558,10 @@
 <main>
     <div id="chat-window" role="log">
         <div class="welcome-msg">
-            <h2>🚀 Nexus Ultra v3.2</h2>
+            <h2>🚀 Nexus Ultra v3.3</h2>
             <p>Введите API ключ и система автоматически выберет лучшую модель</p>
             <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px;">
-                <i class="fas fa-info-circle"></i> 25+ моделей | Умная маршрутизация | Веб-поиск | Экстренный режим | Мульти-чат
+                <i class="fas fa-info-circle"></i> 25+ моделей | Умная маршрутизация | Веб-поиск | Экстренный режим | Мульти-чат | Полноэкранный просмотр
             </p>
         </div>
     </div>
@@ -718,15 +728,6 @@
     // ==========================================
     // NEW: ENHANCED MODELS (25+ MODELS)
     // ==========================================
-    const MODEL_PRIORITIES = {
-        'code': ['deepseek/deepseek-chat:free', 'meta-llama/llama-3.3-70b-instruct:free', 'qwen/qwen-2.5-72b-instruct:free', 'anthropic/claude-3-haiku-20240307', 'anthropic/claude-3.5-haiku-20241022:free'],
-        'creative': ['google/gemini-flash-1.5:free', 'mistralai/mistral-7b-instruct:free', 'nousresearch/nous-hermes-2-mixtral-8x7b-dpo:free', 'cohere/command-r:free', 'meta-llama/llama-3.1-70b-instruct:free'],
-        'analysis': ['qwen/qwen-2.5-72b-instruct:free', 'meta-llama/llama-3.3-70b-instruct:free', 'deepseek/deepseek-chat:free', 'anthropic/claude-3.5-haiku-20241022:free'],
-        'art': ['google/gemini-flash-1.5:free', 'qwen/qwen-2.5-72b-instruct:free', 'mistralai/mistral-7b-instruct:free', 'meta-llama/llama-3.1-8b-instruct:free'],
-        'default': ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemini-flash-1.5:free', 'qwen/qwen-2.5-72b-instruct:free', 'mistralai/mistral-7b-instruct:free', 'deepseek/deepseek-chat:free']
-    };
-
-    // 25+ BATTLE-TESTED FREE MODELS FOR EMERGENCY MODE
     const CONFIG = {
         MAX_HISTORY_LEN: 50,
         TYPING_SPEED: 30,
@@ -781,8 +782,10 @@
     let sessionTokenCount = 0;
     let limitsCache = { data: null, timestamp: 0 };
     let history = [];
-    let currentImageStyle = 'realistic'; // Default style for image generation
-    let isEmergencyMode = false; // Флаг для отслеживания emergency режима
+    let currentImageStyle = 'realistic';
+    let isEmergencyMode = false;
+    let hdModeEnabled = false;
+    let lastLimitUpdate = 0; // NEW: Для rate limiting
 
     // ==========================================
     // NEW: CHAT MANAGEMENT FUNCTIONS
@@ -906,7 +909,9 @@
     function scrollToBottom() {
         requestAnimationFrame(() => {
             const chatWindow = document.getElementById('chat-window');
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            if (chatWindow) {
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
         });
     }
 
@@ -916,11 +921,17 @@
             localStorage.setItem('nexus_current_chat', currentChatId);
             localStorage.setItem('nexus_image_style', currentImageStyle);
             localStorage.setItem('nexus_auto_model', autoModelEnabled);
+            localStorage.setItem('nexus_hd_mode', hdModeEnabled);
         } catch (e) {
             console.warn('Ошибка сохранения в localStorage:', e);
-            // Если превышен лимит, пробуем сжать данные
             if (e.name === 'QuotaExceededError') {
-                alert('⚠️ Превышен лимит хранилища. Удалите старые чаты.');
+                // Очищаем старые чаты при переполнении
+                const keys = Object.keys(chats).sort((a, b) => new Date(chats[a].createdAt) - new Date(chats[b].createdAt));
+                if (keys.length > 5) {
+                    delete chats[keys[0]];
+                    localStorage.setItem('nexus_chats', JSON.stringify(chats));
+                }
+                alert('⚠️ Превышен лимит хранилища. Удалены старые чаты.');
             }
         }
     }
@@ -931,6 +942,7 @@
             const savedCurrent = localStorage.getItem('nexus_current_chat');
             const savedStyle = localStorage.getItem('nexus_image_style');
             const savedAutoModel = localStorage.getItem('nexus_auto_model');
+            const savedHdMode = localStorage.getItem('nexus_hd_mode');
             
             if (savedStyle) {
                 currentImageStyle = savedStyle;
@@ -938,6 +950,10 @@
             
             if (savedAutoModel !== null) {
                 autoModelEnabled = savedAutoModel === 'true';
+            }
+            
+            if (savedHdMode !== null) {
+                hdModeEnabled = savedHdMode === 'true';
             }
             
             if (saved) {
@@ -953,10 +969,14 @@
                 createChat('Стартовый чат');
             }
             
-            // Apply auto-model UI state
             if (autoModelEnabled) {
                 document.getElementById('auto-model-icon').style.color = 'var(--success)';
                 document.getElementById('auto-model-text').textContent = 'Выкл авто-выбор';
+            }
+            
+            if (hdModeEnabled) {
+                document.getElementById('hd-mode-icon').style.color = 'var(--success)';
+                document.getElementById('hd-mode-text').textContent = 'HD Режим ✓';
             }
         } catch (e) {
             console.error('Ошибка загрузки чатов:', e);
@@ -968,27 +988,22 @@
     // NEW: SMART PROMPT ENHANCEMENT FOR IMAGES
     // ==========================================
     function enhanceImagePrompt(originalPrompt) {
-        // Анализируем промпт и добавляем улучшения
         const lowerPrompt = originalPrompt.toLowerCase();
         let enhancements = [];
         
-        // Добавляем качество
         if (!lowerPrompt.includes('quality') && !lowerPrompt.includes('качество')) {
             enhancements.push('masterpiece, best quality, ultra detailed');
         }
         
-        // Добавляем освещение
         if (!lowerPrompt.includes('light') && !lowerPrompt.includes('lighting') && 
             !lowerPrompt.includes('свет') && !lowerPrompt.includes('освещение')) {
             enhancements.push('professional lighting, cinematic');
         }
         
-        // Добавляем разрешение
         if (!lowerPrompt.includes('4k') && !lowerPrompt.includes('8k') && !lowerPrompt.includes('hd')) {
             enhancements.push('8k, high resolution');
         }
         
-        // Специфические улучшения по категориям
         if (lowerPrompt.includes('портрет') || lowerPrompt.includes('portrait')) {
             enhancements.push('professional portrait, detailed face, sharp focus');
         }
@@ -999,7 +1014,6 @@
             enhancements.push('cute, detailed fur, expressive eyes');
         }
         
-        // Убираем дубликаты и собираем финальный промпт
         const basePrompt = originalPrompt.trim();
         const uniqueEnhancements = [...new Set(enhancements)];
         
@@ -1019,20 +1033,18 @@
         searchText.textContent = `🔍 Ищу: "${query}"...`;
         
         try {
-            // Используем DuckDuckGo Instant Answer API
-            const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`, {
+            const response = await fetch(`https://api.duckduckgo.com/?q= ${encodeURIComponent(query)}&format=json&no_html=1`, {
                 signal: AbortSignal.timeout(8000)
             });
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
-            
+
             const data = await response.json();
             
             let searchResults = [];
             
-            // Извлекаем результаты
             if (data.AbstractText) {
                 searchResults.push({
                     title: data.Heading || query,
@@ -1041,7 +1053,6 @@
                 });
             }
             
-            // Добавляем связанные темы
             if (data.RelatedTopics && data.RelatedTopics.length > 0) {
                 const topics = data.RelatedTopics.slice(0, 3).map(topic => ({
                     title: topic.Text || '',
@@ -1051,7 +1062,6 @@
                 searchResults.push(...topics);
             }
             
-            // Если нет результатов, пробуем альтернативный поиск
             if (searchResults.length === 0) {
                 searchText.textContent = '⚠️ Результаты не найдены, использую базовые данные...';
                 await new Promise(r => setTimeout(r, 1000));
@@ -1079,21 +1089,34 @@
     // NEW: IMAGE GENERATION FUNCTIONS
     // ==========================================
     function generatePollinationsUrl(prompt, style = currentImageStyle, seed = null) {
-        // ИСПРАВЛЕНО: убран лишний пробел в URL
-        const cleanPrompt = prompt.replace(/[^a-zA-Z0-9а-яА-Я\s]/g, '').substring(0, 200);
+        // NEW: Магические слова для улучшения качества (скрытые от пользователя)
+        const magicWords = "ultra-detailed, sharp focus, 8k, highly coreherent, cinematic masterpiece";
+        let finalPrompt = prompt;
+        
+        // Добавляем магические слова если их нет в промпте
+        if (!prompt.toLowerCase().includes('ultra-detailed')) {
+            finalPrompt = `${finalPrompt}, ${magicWords}`;
+        }
+        
+        // NEW: Если включен HD режим, добавляем дополнительные параметры
+        if (hdModeEnabled && !prompt.toLowerCase().includes('high contrast')) {
+            finalPrompt = `${finalPrompt}, high contrast, sharp edges`;
+        }
+        
+        const cleanPrompt = finalPrompt.replace(/[^a-zA-Z0-9а-яА-Я\s]/g, '').substring(0, 250);
         const encodedPrompt = encodeURIComponent(cleanPrompt.replace(/\s+/g, '_'));
         const stylePrompt = IMAGE_STYLES[style] || '';
         const fullPrompt = stylePrompt ? `${encodedPrompt}_${stylePrompt}` : encodedPrompt;
         const finalSeed = seed || Date.now();
         
-        return `https://image.pollinations.ai/prompt/${fullPrompt}?nologo=true&seed=${finalSeed}&width=1024&height=768`;
+        // NEW: Добавляем параметр enhance=true для улучшения четкости
+        return `https://image.pollinations.ai/prompt/ ${fullPrompt}?nologo=true&seed=${finalSeed}&width=1024&height=768&enhance=true`;
     }
 
     async function generateImage(prompt) {
         const container = document.createElement('div');
         container.className = 'msg ai';
         
-        // Показываем skeleton loader
         const skeletonDiv = document.createElement('div');
         skeletonDiv.className = 'image-container';
         skeletonDiv.innerHTML = `
@@ -1109,37 +1132,34 @@
         document.getElementById('chat-window').appendChild(container);
         scrollToBottom();
         
-        // Улучшаем промпт перед генерацией
         const enhancedPrompt = enhanceImagePrompt(prompt);
         
-        // Обновляем текст в skeleton
         skeletonDiv.querySelector('.thinking-content span').textContent = 
             `✨ Создание: "${enhancedPrompt.substring(0, 50)}..."`;
         
-        // Генерируем URL и создаем изображение
         const imageUrl = generatePollinationsUrl(enhancedPrompt);
         const img = new Image();
         
         img.onload = () => {
-            // Заменяем skeleton на реальное изображение
             const imgContainer = document.createElement('div');
             imgContainer.className = 'image-container';
+            imgContainer.onclick = () => openImageModal(imageUrl); // NEW: Клик для полноэкрана
             imgContainer.innerHTML = `
                 <div class="image-actions">
-                    <button class="image-action-btn" onclick="downloadImage('${imageUrl}', '${enhancedPrompt}')" title="Скачать">
-                        <i class="fas fa-download"></i>
-                    </button>
-                    <button class="image-action-btn" onclick="openImageModal('${imageUrl}')" title="Увеличить">
+                    <button class="image-action-btn" onclick="event.stopPropagation(); openImageModal('${imageUrl}')" title="Полноэкранный просмотр">
                         <i class="fas fa-expand"></i>
                     </button>
-                    <button class="image-action-btn" onclick="shareImage('${imageUrl}', '${enhancedPrompt}')" title="Поделиться">
+                    <button class="image-action-btn" onclick="event.stopPropagation(); downloadImage('${imageUrl}', '${enhancedPrompt}')" title="Скачать">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="image-action-btn" onclick="event.stopPropagation(); shareImage('${imageUrl}', '${enhancedPrompt}')" title="Поделиться">
                         <i class="fas fa-share"></i>
                     </button>
                 </div>
                 <img src="${imageUrl}" alt="Generated image: ${enhancedPrompt}" class="generated-image">
                 <div class="image-meta">
-                    <span>Style: ${currentImageStyle} | Enhanced by AI</span>
-                    <button class="quick-save-btn" onclick="downloadImage('${imageUrl}', '${enhancedPrompt}')">
+                    <span>Style: ${currentImageStyle}${hdModeEnabled ? ' | HD' : ''} | Enhanced by AI</span>
+                    <button class="quick-save-btn" onclick="event.stopPropagation(); downloadImage('${imageUrl}', '${enhancedPrompt}')">
                         <i class="fas fa-save"></i> Сохранить
                     </button>
                 </div>
@@ -1148,7 +1168,6 @@
             skeletonDiv.replaceWith(imgContainer);
             scrollToBottom();
             
-            // Добавляем в историю
             history.push({ 
                 type: 'image', 
                 content: { url: imageUrl, prompt: enhancedPrompt, style: currentImageStyle, originalPrompt: prompt } 
@@ -1172,10 +1191,8 @@
     }
 
     function downloadImage(url, prompt) {
-        // ИСПРАВЛЕНО: Корректное имя файла и загрузка
         const a = document.createElement('a');
         a.href = url;
-        // Убираем специальные символы из имени файла
         const safePrompt = prompt.substring(0, 50).replace(/[^a-zA-Z0-9а-яА-Я]/g, '_');
         a.download = `nexus_${safePrompt}_${Date.now()}.png`;
         document.body.appendChild(a);
@@ -1184,17 +1201,15 @@
     }
 
     function openImageModal(url) {
-        // ИСПРАВЛЕНО: Правильное модальное окно с закрытием
         const modal = document.createElement('div');
         modal.className = 'image-modal';
         modal.onclick = (e) => {
             if (e.target === modal) {
                 modal.remove();
-                document.body.style.overflow = ''; // Включаем прокрутку
+                document.body.style.overflow = '';
             }
         };
         
-        // Отключаем прокрутку страницы
         document.body.style.overflow = 'hidden';
         
         const closeBtn = document.createElement('div');
@@ -1202,7 +1217,7 @@
         closeBtn.innerHTML = '<i class="fas fa-times"></i>';
         closeBtn.onclick = () => {
             modal.remove();
-            document.body.style.overflow = ''; // Включаем прокрутку
+            document.body.style.overflow = '';
         };
         
         const img = document.createElement('img');
@@ -1213,11 +1228,10 @@
         modal.appendChild(img);
         document.body.appendChild(modal);
         
-        // Закрытие по Escape
         const closeOnEscape = (e) => {
             if (e.key === 'Escape') {
                 modal.remove();
-                document.body.style.overflow = ''; // Включаем прокрутку
+                document.body.style.overflow = '';
                 document.removeEventListener('keydown', closeOnEscape);
             }
         };
@@ -1247,22 +1261,23 @@
         
         const container = document.createElement('div');
         container.className = 'image-container';
+        container.onclick = () => openImageModal(imageData.url); // NEW: Клик для полноэкрана
         container.innerHTML = `
             <div class="image-actions">
-                <button class="image-action-btn" onclick="downloadImage('${imageData.url}', '${imageData.prompt}')" title="Скачать">
-                    <i class="fas fa-download"></i>
-                </button>
-                <button class="image-action-btn" onclick="openImageModal('${imageData.url}')" title="Увеличить">
+                <button class="image-action-btn" onclick="event.stopPropagation(); openImageModal('${imageData.url}')" title="Полноэкранный просмотр">
                     <i class="fas fa-expand"></i>
                 </button>
-                <button class="image-action-btn" onclick="shareImage('${imageData.url}', '${imageData.prompt}')" title="Поделиться">
+                <button class="image-action-btn" onclick="event.stopPropagation(); downloadImage('${imageData.url}', '${imageData.prompt}')" title="Скачать">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="image-action-btn" onclick="event.stopPropagation(); shareImage('${imageData.url}', '${imageData.prompt}')" title="Поделиться">
                     <i class="fas fa-share"></i>
                 </button>
             </div>
             <img src="${imageData.url}" alt="Generated image: ${imageData.prompt}" class="generated-image">
             <div class="image-meta">
-                <span>Style: ${imageData.style}</span>
-                <button class="quick-save-btn" onclick="downloadImage('${imageData.url}', '${imageData.prompt}')">
+                <span>Style: ${imageData.style}${hdModeEnabled ? ' | HD' : ''}</span>
+                <button class="quick-save-btn" onclick="event.stopPropagation(); downloadImage('${imageData.url}', '${imageData.prompt}')">
                     <i class="fas fa-save"></i> Сохранить
                 </button>
             </div>
@@ -1323,6 +1338,14 @@
     // LIMITS & MODEL MANAGEMENT
     // ==========================================
     async function updateAllLimits(force = false) {
+        // NEW: Rate limiting - не чаще 1 раза в 30 секунд
+        const now = Date.now();
+        if (!force && now - lastLimitUpdate < 30000) {
+            console.log('⏳ Обновление лимитов слишком частое, пропускаем');
+            return;
+        }
+        lastLimitUpdate = now;
+
         const key = document.getElementById('key').value.trim();
         if (!key) {
             alert('🔑 Введите API ключ!');
@@ -1333,52 +1356,73 @@
         limitsContainer.innerHTML = '<div style="text-align:center; padding: 10px;"><i class="fas fa-spinner fa-spin"></i> Загрузка лимитов...</div>';
 
         try {
-            // ИСПРАВЛЕНО: убран лишний пробел в URL
-            const res = await fetch('https://openrouter.ai/api/v1/auth/key', {
-                headers: { 'Authorization': `Bearer ${key}` },
-                signal: AbortSignal.timeout(10000)
-            });
-
-            if (!res.ok) {
-                if (res.status === 401) throw new Error('Неверный API ключ (401)');
-                if (res.status === 429) throw new Error('Слишком много запросов к API (429)');
-                if (res.status === 503) throw new Error('API временно недоступен (503)');
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-            }
-
-            const data = await res.json();
+            // NEW: Exponential backoff для ошибок
+            let retries = 0;
+            let lastError = null;
             
-            modelLimits = {};
-            let totalRemaining = 0;
-            let reliableCount = 0;
+            while (retries < 3) {
+                try {
+                    const res = await fetch('https://openrouter.ai/api/v1/auth/key ', {
+                        headers: { 'Authorization': `Bearer ${key}` },
+                        signal: AbortSignal.timeout(10000)
+                    });
 
-            CONFIG.MODELS.forEach(model => {
-                const modelData = data.data?.models?.[model.id];
-                let used = 0, limit = 0, remaining = Infinity;
+                    if (!res.ok) {
+                        if (res.status === 401) throw new Error('Неверный API ключ (401)');
+                        if (res.status === 429) {
+                            // NEW: Ждем при 429
+                            const waitTime = Math.pow(2, retries) * 1000;
+                            document.getElementById('thinking-text').textContent = `⚠️ Слишком много запросов, жду ${waitTime/1000}с...`;
+                            await new Promise(r => setTimeout(r, waitTime));
+                            retries++;
+                            continue;
+                        }
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
 
-                if (modelData) {
-                    used = modelData.usage || 0;
-                    limit = modelData.limit || 0;
-                    remaining = Math.max(0, limit - used);
+                    const data = await res.json();
+                    
+                    modelLimits = {};
+                    let totalRemaining = 0;
+                    let reliableCount = 0;
+
+                    CONFIG.MODELS.forEach(model => {
+                        const modelData = data.data?.models?.[model.id];
+                        let used = 0, limit = 0, remaining = Infinity;
+
+                        if (modelData) {
+                            used = modelData.usage || 0;
+                            limit = modelData.limit || 0;
+                            remaining = Math.max(0, limit - used);
+                        }
+
+                        modelLimits[model.id] = { used, limit, remaining };
+                        totalRemaining += remaining;
+                        if (model.reliable && remaining > 0) reliableCount++;
+                    });
+
+                    isEmergencyMode = totalRemaining === 0 || reliableCount === 0;
+                    
+                    limitsCache = { data: modelLimits, timestamp: Date.now() };
+                    
+                    renderLimits(reliableCount);
+                    updateConnectionStatus(totalRemaining > 0);
+                    
+                    const refreshTime = new Date(Date.now() + 5 * 60 * 1000).toLocaleTimeString('ru-RU', { minute: '2-digit', second: '2-digit' });
+                    document.getElementById('limits-refresh-time').textContent = `(авто до ${refreshTime})`;
+                    
+                    return; // Успех, выходим из цикла
+                } catch (e) {
+                    lastError = e;
+                    if (e.name === 'AbortError') throw e;
+                    retries++;
+                    if (retries < 3) {
+                        await new Promise(r => setTimeout(r, 1000 * retries));
+                    }
                 }
-
-                modelLimits[model.id] = { used, limit, remaining };
-                totalRemaining += remaining;
-                if (model.reliable && remaining > 0) reliableCount++;
-            });
-
-            // Определяем emergency режим
-            isEmergencyMode = totalRemaining === 0 || reliableCount === 0;
+            }
             
-            // Сохраняем в кэш
-            limitsCache = { data: modelLimits, timestamp: Date.now() };
-            
-            renderLimits(reliableCount);
-            updateConnectionStatus(totalRemaining > 0);
-            
-            const refreshTime = new Date(Date.now() + 5 * 60 * 1000).toLocaleTimeString('ru-RU', { minute: '2-digit', second: '2-digit' });
-            document.getElementById('limits-refresh-time').textContent = `(авто до ${refreshTime})`;
-
+            throw lastError;
         } catch (e) {
             console.error('Ошибка загрузки лимитов:', e);
             limitsContainer.innerHTML = `<div style="color:var(--error); padding: 10px;">❌ ${e.message}</div>`;
@@ -1386,7 +1430,6 @@
         }
     }
 
-    // ИСПРАВЛЕНО: добавлен параметр reliableCount
     function renderLimits(reliableCount = 0) {
         const container = document.getElementById('model-limits');
         container.innerHTML = '';
@@ -1397,18 +1440,17 @@
         let emergencyModels = [];
         
         CONFIG.MODELS.forEach(model => {
-            const limit = modelLimits[model.id] || { remaining: Infinity };
-            if (limit.remaining > maxRemaining) {
+            const limit = modelLimits[model.id];
+            if (limit && limit.remaining > maxRemaining) {
                 maxRemaining = limit.remaining;
                 bestModel = model.id;
             }
-            totalRemaining += limit.remaining;
+            totalRemaining += limit?.remaining || 0;
             if (model.tier === 'EMG' || model.tier === 'S') {
-                emergencyModels.push({ ...model, remaining: limit.remaining });
+                emergencyModels.push({ ...model, remaining: limit?.remaining || 0 });
             }
         });
 
-        // ИСПРАВЛЕНО: используем глобальную переменную isEmergencyMode
         if (isEmergencyMode) {
             document.getElementById('connection-status').textContent = 'ЭКСТРЕННЫЙ';
             document.getElementById('status-indicator').className = 'status-indicator emergency';
@@ -1460,6 +1502,31 @@
         
         saveChats();
     }
+
+    // NEW: Функция переключения HD режима
+    function toggleHdMode() {
+        hdModeEnabled = !hdModeEnabled;
+        const icon = document.getElementById('hd-mode-icon');
+        const text = document.getElementById('hd-mode-text');
+        
+        if (hdModeEnabled) {
+            icon.style.color = 'var(--success)';
+            text.textContent = 'HD Режим ✓';
+        } else {
+            icon.style.color = 'var(--text-secondary)';
+            text.textContent = 'HD Режим';
+        }
+        
+        saveChats();
+    }
+
+    const MODEL_PRIORITIES = {
+        default: ['deepseek/deepseek-chat:free', 'meta-llama/llama-3.3-70b-instruct:free', 'google/gemini-flash-1.5:free'],
+        code: ['deepseek/deepseek-chat:free', 'meta-llama/llama-3.3-70b-instruct:free', 'anthropic/claude-3-haiku-20240307'],
+        art: ['google/gemini-flash-1.5:free', 'meta-llama/llama-3.3-70b-instruct:free', 'qwen/qwen-2.5-72b-instruct:free'],
+        analysis: ['deepseek/deepseek-chat:free', 'meta-llama/llama-3.3-70b-instruct:free', 'anthropic/claude-3-haiku-20240307'],
+        creative: ['meta-llama/llama-3.3-70b-instruct:free', 'google/gemini-flash-1.5:free', 'qwen/qwen-2.5-72b-instruct:free']
+    };
 
     function getBestModel(queryType = null) {
         if (!autoModelEnabled && !queryType) return CONFIG.MODELS[0].id;
@@ -1524,8 +1591,7 @@
                 document.getElementById('thinking-text').textContent = 
                     `🔄 ${modelCfg?.name} (попытка ${attempts}/${modelsToTry.length})`;
                 
-                // ИСПРАВЛЕНО: убран лишний пробел в URL
-                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions ", {
                     method: "POST",
                     headers: { 
                         "Authorization": `Bearer ${key}`, 
@@ -1587,14 +1653,12 @@
             return;
         }
 
-        // Handle commands
         if (text.startsWith('/')) {
             handleCommand(text);
             input.value = '';
             return;
         }
 
-        // Check for image generation
         if (text.toLowerCase().startsWith('/img') || text.toLowerCase().startsWith('изобрази') || text.toLowerCase().startsWith('нарисуй')) {
             const imagePrompt = text.replace(/^\/img\s*/i, '').replace(/^изобрази\s*/i, '').replace(/^нарисуй\s*/i, '').trim();
             if (imagePrompt) {
@@ -1606,6 +1670,7 @@
             }
         }
 
+        // NEW: Проверяем кэш перед запросом
         if (autoModelEnabled || (Date.now() - limitsCache.timestamp > 300000)) {
             await updateAllLimits();
         }
@@ -1613,14 +1678,13 @@
         let enhancedText = text;
         let searchResults = null;
         
-        // В режиме поиска выполняем веб-поиск
         if (currentMode === 'search') {
             searchResults = await performWebSearch(text);
             if (searchResults && searchResults.length > 0) {
                 const searchContext = searchResults.map(r => 
                     `[Источник: ${r.source}]\n${r.title}\n${r.content}\n`
                 ).join('\n');
-                enhancedText = `Пользователь запросил: "${text}"\n\nДанные из интернета:\n${searchContext}\n\nОтветь на зап пользователя на основе этих данных.`;
+                enhancedText = `Пользователь запросил: "${text}"\n\nДанные из интернета:\n${searchContext}\n\nОтветь на запрос пользователя на основе этих данных.`;
             }
         }
 
@@ -1706,7 +1770,10 @@
     }
 
     function stopGeneration() {
-        if (abortController) abortController.abort();
+        if (abortController) {
+            abortController.abort();
+            abortController = null; // FIX: Очищаем контроллер
+        }
     }
 
     // ==========================================
@@ -1729,7 +1796,8 @@
             if (animate) {
                 await typeWriter(content, text);
             }
-            content.innerHTML = marked.parse(text);
+            // NEW: Sanitize markdown against XSS
+            content.innerHTML = marked.parse(text, { sanitize: true });
             addCopyButtons(content);
             content.querySelectorAll('pre code').forEach(block => Prism.highlightElement(block));
         } else {
@@ -1757,7 +1825,7 @@
             wrapper.appendChild(pre);
             
             const button = document.createElement('button');
-                button.className = 'copy-btn';
+            button.className = 'copy-btn';
             button.innerHTML = '<i class="fas fa-copy"></i>';
             button.onclick = async () => {
                 await navigator.clipboard.writeText(pre.textContent);
@@ -1828,47 +1896,47 @@
     }
 
     function handleCommand(cmd) {
-    const parts = cmd.split(' ');
-    const command = parts[0];
-    const args = parts.slice(1).join(' ');
-    
-    switch(command) {
-        case '/clear':
-            clearChat();
-            break;
-        case '/export':
-            exportChat();
-            break;
-        case '/new':
-            createChat(args || null);
-            break;
-        case '/help':
-        case '/?':
-            showCommands();
-            break;
-        case '/style':
-            if (args && IMAGE_STYLES[args]) {
-                currentImageStyle = args;
-                saveChats();
-                alert(`🎨 Стиль изменен на: ${args}`);
-            } else {
-                alert(`❓ Неизвестный стиль. Доступные: ${Object.keys(IMAGE_STYLES).join(', ')}`);
-            }
-            break;
-        case '/img':
-            if (args) {
-                generateImage(args);
-            } else {
-                alert('❓ Укажите описание для генерации изображения');
-            }
-            break;
-        default:
-            alert(`❓ Неизвестная команда: ${cmd}\nВведите /help для списка команд`);
+        const parts = cmd.split(' ');
+        const command = parts[0];
+        const args = parts.slice(1).join(' ');
+        
+        switch(command) {
+            case '/clear':
+                clearChat();
+                break;
+            case '/export':
+                exportChat();
+                break;
+            case '/new':
+                createChat(args || null);
+                break;
+            case '/help':
+            case '/?':
+                showCommands();
+                break;
+            case '/style':
+                if (args && IMAGE_STYLES[args]) {
+                    currentImageStyle = args;
+                    saveChats();
+                    alert(`🎨 Стиль изменен на: ${args}`);
+                } else {
+                    alert(`❓ Неизвестный стиль. Доступные: ${Object.keys(IMAGE_STYLES).join(', ')}`);
+                }
+                break;
+            case '/img':
+                if (args) {
+                    generateImage(args);
+                } else {
+                    alert('❓ Укажите описание для генерации изображения');
+                }
+                break;
+            default:
+                alert(`❓ Неизвестная команда: ${cmd}\nВведите /help для списка команд`);
+        }
     }
-}
 
     function showCommands() {
-    alert(`🤖 Доступные команды:
+        alert(`🤖 Доступные команды:
     
 /clear - Очистить чат
 /export - Экспортировать историю
@@ -1888,6 +1956,7 @@
 • Ctrl+N - Новый чат
 • Клик по 🎤 - Голосовой ввод
 • Клик по 🖼️ - Загрузить изображение
+• 🖼️ Клик по изображению - Полноэкранный просмотр
 
 🖼️ Стили генерации:
 ${Object.keys(IMAGE_STYLES).join(', ')}
@@ -1895,7 +1964,7 @@ ${Object.keys(IMAGE_STYLES).join(', ')}
 💡 Также работает просто: "изобрази черный кот" или "нарисуй закат"
 💡 Статус моделей обновляется автоматически каждые 5 минут
 🚨 Экстренный режим: ${CONFIG.MODELS.filter(m => m.tier === 'EMG' || m.tier === 'S').length} резервных моделей`);
-}
+    }
 
     // ==========================================
     // VOICE RECOGNITION
@@ -1991,14 +2060,25 @@ ${Object.keys(IMAGE_STYLES).join(', ')}
         
         loadChats();
 
-        // Автообновление лимитов каждые 5 минут
-        setInterval(() => {
+        // NEW: Debounced resize handler
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (window.innerWidth > 768) {
+                    closeSidebar();
+                }
+            }, 250);
+        });
+
+        // NEW: Smart interval - только если вкладка активна
+        let intervalId = setInterval(() => {
+            if (document.hidden) return; // Не обновляем если вкладка неактивна
             if (document.getElementById('key').value.trim() && autoModelEnabled) {
                 updateAllLimits();
             }
         }, 5 * 60 * 1000);
         
-        // Сохранение ключа при изменении
         document.getElementById('key').addEventListener('change', (e) => {
             localStorage.setItem('nexus_key', e.target.value);
             updateAllLimits();
@@ -2032,6 +2112,13 @@ ${Object.keys(IMAGE_STYLES).join(', ')}
             e.preventDefault();
             const modes = ['normal', 'search', 'deep', 'art'];
             setMode(modes[parseInt(e.key) - 1]);
+        }
+    });
+
+    // NEW: Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (abortController) {
+            abortController.abort();
         }
     });
 </script>
